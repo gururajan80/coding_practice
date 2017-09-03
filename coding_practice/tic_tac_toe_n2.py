@@ -9,14 +9,6 @@ class User(object):
     def symbol(self):
         return symbol
 
-class BlockAlreadyChosen(Exception):
-    def __init__(self,*args,**kwargs):
-        Exception.__init__(self,*args,**kwargs)
-
-class InvalidBlock(Exception):
-    def __init__(self,*args,**kwargs):
-        Exception.__init__(self,*args,**kwargs)
-
 class Board(object):
     def __init__(self, n, player1, player2):
         self.size = n
@@ -51,46 +43,50 @@ class Board(object):
 
         self.board[p] = 1 if symbol == 'X' else -1
 
-    def get_possibilities(self, position, symbol, start, end, interval):
+    def get_possibilities(self, position, symbol, start, end, interval, check=True):
         possibilities = list()
         if position-interval >= start and position+interval <= end and \
             self.board[position-interval] == symbol and self.board[position+interval] == symbol:
-            possibilities.append([self.board[position-interval], 
+            possibilities.append([self.board[position-interval],
                                 self.board[position],
                                 self.board[position+interval]])
 
-        if (position-(2*interval) >= start and position-(interval) > start and \
-            self.board[position-interval] == symbol and self.board[position-2*interval] == symbol):
-            possibilities.append([self.board[position-2*interval],
-                                  self.board[position-interval],
-                                  self.board[position]])
+        if check:
+            if (position-(2*interval) >= start and position-interval > start and \
+                self.board[position-interval] == symbol and self.board[position-(2*interval)] == symbol):
+                possibilities.append([self.board[position-2*interval],
+                                      self.board[position-interval],
+                                      self.board[position]])
 
-        if (position+interval < end and position+(2*interval) < end and \
-            self.board[position+interval] == symbol and self.board[position+2*interval] == symbol):
-            possibilities.append([self.board[position], self.board[position+interval],
-                                  self.board[position+2*interval]])
-
+            if (position+interval < end and position+(2*interval) < end and \
+                self.board[position+interval] == symbol and self.board[position+2*interval] == symbol):
+                possibilities.append([self.board[position], self.board[position+interval],
+                                      self.board[position+2*interval]])
         return possibilities
 
     def check_horizontal(self, position, symbol):
         start = (position/self.size)* self.size
-        end = (position/self.size) * self.size + self.size
+        end = (position/self.size) * self.size + self.size - 1
         possibilities = self.get_possibilities(position, symbol, start, end, 1)
         return any(sum(p) == 3 or sum(p) == -3 for p in possibilities)
 
     def check_vertical(self, position, symbol):
         start = 0
-        end = self.size*self.size
+        end = self.size*self.size - 1
         possibilities = self.get_possibilities(position, symbol, start, end, self.size)
         return any(sum(p) == 3 or sum(p) == -3 for p in possibilities)
 
     def check_diagonal(self, position, symbol):
         start = 0
-        end = self.size*self.size
+        end = self.size*self.size - 1
         diag1_possibilities = self.get_possibilities(position, symbol, start, end, self.size+1)
-        diag2_possibilities = self.get_possibilities(position, symbol, start, end, self.size-1)
+        print diag1_possibilities
+        diag2_possibilities = self.get_possibilities(position, symbol, start, end, self.size-1, check=False)
+        print diag2_possibilities
         return (any(sum(p) == 3 or sum(p) == -3 for p in diag1_possibilities) or
                 any(sum(p) == 3 or sum(p) == -3 for p in diag2_possibilities))
+
+        return possibilities
 
     def check_winner(self, position, symbol):
         symbol = 1 if symbol=='X' else -1
@@ -99,6 +95,8 @@ class Board(object):
                self.check_diagonal(position, symbol)
 
 if __name__ == "__main__":
+    player1 = raw_input("Enter player1 name, his symbol (X)? ")
+    player2 = raw_input("Enter player2 name, his symbol (O)? ")
     while 1:
         try:
             size = raw_input("Enter the Board size rows/cols(integer)? ")
@@ -108,8 +106,6 @@ if __name__ == "__main__":
                 continue
         except Exception as e:
             continue
-        player1 = raw_input("Enter player1 name, his symbol (X)? ")
-        player2 = raw_input("Enter player2 name, his symbol (O)? ")
         b = Board(size, User(player1, 'X'), User(player2, 'O'))
         player = 0
         b.display_board(help=True)
@@ -123,7 +119,6 @@ if __name__ == "__main__":
             try:
                 b.insert(n, user.symbol)
                 b.display_board()
-                print b.board
                 status = b.check_winner(n, user.symbol)
                 if status:
                     print "Player {0} won the game.... ".format(user.name)
@@ -133,7 +128,7 @@ if __name__ == "__main__":
                 continue
             player = 1 - player
 
-        another = raw_input("Do you want to quit [N/y]  ")
+        another = raw_input("Do you want to quit [n/y]  ")
         if another == '' or another.upper() == 'Y':
             exit()
         else:
