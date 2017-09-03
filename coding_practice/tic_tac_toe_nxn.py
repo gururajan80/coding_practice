@@ -40,29 +40,37 @@ class Board(object):
         if self.board[p] != 0:
             print 'This block is already chosen, find another block'
             raise
-
         self.board[p] = 1 if symbol == 'X' else -1
 
-    def get_possibilities(self, position, symbol, start, end, interval, check=True):
+    def get_possibilities(self, position, symbol, start, end, interval):
         possibilities = list()
-        if position-interval >= start and position+interval <= end and \
-            self.board[position-interval] == symbol and self.board[position+interval] == symbol:
-            possibilities.append([self.board[position-interval],
-                                self.board[position],
-                                self.board[position+interval]])
+        if (position-(2*interval) >= start):
+            possibilities.append([self.board[position-2*interval], self.board[position-interval],
+                                  self.board[position]])
 
-        if check:
-            if (position-(2*interval) >= start and position-interval > start and \
-                self.board[position-interval] == symbol and self.board[position-(2*interval)] == symbol):
-                possibilities.append([self.board[position-2*interval],
-                                      self.board[position-interval],
-                                      self.board[position]])
+        if position-interval>=start and position+interval<=end:
+            possibilities.append([self.board[position-interval], self.board[position],
+                                  self.board[position+interval]])
 
-        if (position+interval < end and position+(2*interval) < end and \
-            self.board[position+interval] == symbol and self.board[position+2*interval] == symbol):
+        if position+(2*interval) <= end:
             possibilities.append([self.board[position], self.board[position+interval],
                                   self.board[position+2*interval]])
-        return possibilities
+        return [p for p in possibilities if all([x==symbol for x in p])]
+
+    def diag2_possibilities(self, position, symbol, start, end, interval):
+        possibilities = list()
+        if position+interval <= end and position-interval >= start:
+            possibilities.append([self.board[position+interval], self.board[position],
+                                  self.board[position-interval]])
+
+        if position+(2*interval) <= end and position+interval <= end:
+            possibilities.append([self.board[position+(2*interval)], self.board[position+interval],
+                                  self.board[position]])
+
+        if position-(2*interval) >= start and position-interval >= start:
+            possibilities.append([self.board[position-(2*interval)], self.board[position-interval],
+                                  self.board[position]])
+        return [p for p in possibilities if all([x==symbol for x in p])]
 
     def check_horizontal(self, position, symbol):
         start = (position/self.size)* self.size
@@ -80,7 +88,7 @@ class Board(object):
         start = 0
         end = self.size*self.size - 1
         diag1_possibilities = self.get_possibilities(position, symbol, start, end, self.size+1)
-        diag2_possibilities = self.get_possibilities(position, symbol, start, end, self.size-1, check=False)
+        diag2_possibilities = self.diag2_possibilities(position, symbol, start, end, self.size-1)
         return (any(sum(p) == 3 or sum(p) == -3 for p in diag1_possibilities) or
                 any(sum(p) == 3 or sum(p) == -3 for p in diag2_possibilities))
 
