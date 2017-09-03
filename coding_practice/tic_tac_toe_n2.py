@@ -58,10 +58,10 @@ class Board(object):
                                       self.board[position-interval],
                                       self.board[position]])
 
-            if (position+interval < end and position+(2*interval) < end and \
-                self.board[position+interval] == symbol and self.board[position+2*interval] == symbol):
-                possibilities.append([self.board[position], self.board[position+interval],
-                                      self.board[position+2*interval]])
+        if (position+interval < end and position+(2*interval) < end and \
+            self.board[position+interval] == symbol and self.board[position+2*interval] == symbol):
+            possibilities.append([self.board[position], self.board[position+interval],
+                                  self.board[position+2*interval]])
         return possibilities
 
     def check_horizontal(self, position, symbol):
