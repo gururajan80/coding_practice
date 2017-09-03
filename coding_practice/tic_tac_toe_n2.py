@@ -34,12 +34,12 @@ class Board(object):
 
     def insert(self, p, symbol):
         if p > self.boardsize or p < 0:
-            print 'Choose a number between {0} and {1}'.format(1, len(self.board))
-            raise InvalidBlock()
+            print 'Choose a number between {0} and {1}'.format(1, len(self.boardsize))
+            raise
 
         if self.board[p] != 0:
             print 'This block is already chosen, find another block'
-            raise BlockAlreadyChosen()
+            raise
 
         self.board[p] = 1 if symbol == 'X' else -1
 
