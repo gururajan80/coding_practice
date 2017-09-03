@@ -80,9 +80,7 @@ class Board(object):
         start = 0
         end = self.size*self.size - 1
         diag1_possibilities = self.get_possibilities(position, symbol, start, end, self.size+1)
-        print diag1_possibilities
         diag2_possibilities = self.get_possibilities(position, symbol, start, end, self.size-1, check=False)
-        print diag2_possibilities
         return (any(sum(p) == 3 or sum(p) == -3 for p in diag1_possibilities) or
                 any(sum(p) == 3 or sum(p) == -3 for p in diag2_possibilities))
 
