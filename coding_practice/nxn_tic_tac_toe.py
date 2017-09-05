@@ -13,8 +13,8 @@ class Board(object):
     def __init__(self, n, player1, player2):
         self.size = n
         self.boardsize = n * n
-        self.board = [0 for i in range(n*n+1)]
-        self.helpboard = [i for i in range(1, n*n+1)]
+        self.board = [0 for i in range(1, n*n+1, 1)]
+        self.helpboard = [i for i in range(1, n*n+1, 1)]
         self.players = [player1, player2]
 
     def reference_board(self):
@@ -43,7 +43,7 @@ class Board(object):
 
     def get_possibilities(self, pos, symbol, start, end, diff):
         possibilities = list()
-        if pos-(2*diff) >= start and \
+        if pos-(2*diff) >= start and pos-diff >= start and \
            self.board[pos-2*diff] == symbol and self.board[pos-diff] == symbol:
             possibilities.append([self.board[pos-2*diff], self.board[pos-diff],
                                   self.board[pos]])
@@ -53,7 +53,7 @@ class Board(object):
             possibilities.append([self.board[pos-diff], self.board[pos],
                                   self.board[pos+diff]])
 
-        if pos+(2*diff) <= end and \
+        if pos+(2*diff) <= end and pos+diff <= end and \
            self.board[pos+2*diff] == symbol and self.board[pos+diff] == symbol:
             possibilities.append([self.board[pos], self.board[pos+diff],
                                   self.board[pos+2*diff]])
@@ -85,19 +85,19 @@ class Board(object):
 
     def check_horizontal(self, pos, symbol):
         start = (pos/self.size)* self.size
-        end = (pos/self.size) * self.boardsize - 1
+        end = self.boardsize-1
         possibilities = self.get_possibilities(pos, symbol, start, end, 1)
         return any(sum(p) == 3 or sum(p) == -3 for p in possibilities)
 
     def check_vertical(self, pos, symbol):
         start = 0
-        end = self.boardsize - 1
+        end = self.boardsize-1
         possibilities = self.get_possibilities(pos, symbol, start, end, self.size)
         return any(sum(p) == 3 or sum(p) == -3 for p in possibilities)
 
     def check_diagonal(self, pos, symbol):
         start = 0
-        end = self.boardsize - 1
+        end = self.boardsize-1
         diag1_possibilities = self.get_possibilities(pos, symbol, start, end, self.size+1)
         diag2_possibilities = self.diag2_possibilities(pos, symbol, start, end, self.size-1)
         return (any(sum(p) == 3 or sum(p) == -3 for p in diag1_possibilities) or
@@ -126,7 +126,7 @@ if __name__ == "__main__":
         b.display_board(help=True)
         while 1:
             user = b.players[player]
-            n = raw_input("Player {0}.. Choose a number between 1 to {1}:  ".format(user.name, (size*size)))
+            n = raw_input("Player {0}.. Choose a number from 1 to {1}:  ".format(user.name, (size*size)))
             try:
                 n = int(n)-1
             except ValueError:
@@ -140,11 +140,10 @@ if __name__ == "__main__":
                     break
                 b.display_board(help=True)
             except:
-                raise
                 continue
             player = 1 - player
 
-        another = raw_input("Do you want to quit [n/y]  ")
+        another = raw_input("Do you want to quit [n/Y]  ")
         if another == '' or another.upper() == 'Y':
             exit()
         else:
